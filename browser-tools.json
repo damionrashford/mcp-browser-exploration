@@ -1,0 +1,1302 @@
+{
+  "browserTools": {
+    "network": {
+      "fetch_url": {
+        "name": "fetch_url",
+        "description": "Fetch content from a URL using Fetch API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": { "type": "string" },
+            "method": { "type": "string", "default": "GET" },
+            "headers": { "type": "object" },
+            "body": { "type": "string" },
+            "mode": { "type": "string", "enum": ["cors", "no-cors", "same-origin"] },
+            "credentials": { "type": "string", "enum": ["omit", "same-origin", "include"] }
+          }
+        }
+      },
+      "websocket_connect": {
+        "name": "websocket_connect",
+        "description": "Connect to WebSocket and send/receive messages",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": { "type": "string" },
+            "message": { "type": "string" },
+            "protocols": { "type": "array" }
+          }
+        }
+      },
+      "cors_proxy": {
+        "name": "cors_proxy",
+        "description": "Make CORS requests through a proxy service",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": { "type": "string" },
+            "proxy": { "type": "string" }
+          }
+        }
+      },
+      "beacon": {
+        "name": "beacon",
+        "description": "Send data using Navigator.sendBeacon()",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": { "type": "string" },
+            "data": { "type": "string" }
+          }
+        }
+      }
+    },
+    "storage": {
+      "local_storage": {
+        "name": "local_storage",
+        "description": "Access browser local storage",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["get", "set", "remove", "clear", "keys", "length"] },
+            "key": { "type": "string" },
+            "value": { "type": "string" }
+          }
+        }
+      },
+      "session_storage": {
+        "name": "session_storage",
+        "description": "Access browser session storage",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["get", "set", "remove", "clear", "keys", "length"] },
+            "key": { "type": "string" },
+            "value": { "type": "string" }
+          }
+        }
+      },
+      "indexed_db": {
+        "name": "indexed_db",
+        "description": "Access IndexedDB database",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["get", "put", "delete", "list", "createStore", "deleteStore"] },
+            "database": { "type": "string" },
+            "store": { "type": "string" },
+            "key": { "type": "string" },
+            "value": { "type": "object" },
+            "version": { "type": "number" }
+          }
+        }
+      },
+      "cookies": {
+        "name": "cookies",
+        "description": "Read browser cookies",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "action": { "type": "string", "enum": ["get", "getAll", "set", "remove"] },
+            "value": { "type": "string" },
+            "options": { "type": "object" }
+          }
+        }
+      },
+      "cache_api": {
+        "name": "cache_api",
+        "description": "Cache API for offline storage",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["open", "add", "put", "delete", "keys", "match", "matchAll"] },
+            "cacheName": { "type": "string" },
+            "url": { "type": "string" },
+            "request": { "type": "object" },
+            "response": { "type": "object" }
+          }
+        }
+      }
+    },
+    "device": {
+      "geolocation": {
+        "name": "geolocation",
+        "description": "Get user location",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "highAccuracy": { "type": "boolean", "default": false },
+            "timeout": { "type": "number" },
+            "maximumAge": { "type": "number" }
+          }
+        }
+      },
+      "device_orientation": {
+        "name": "device_orientation",
+        "description": "Get device orientation",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["get", "watch", "clearWatch"] }
+          }
+        }
+      },
+      "device_motion": {
+        "name": "device_motion",
+        "description": "Get device motion data",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["get", "watch", "clearWatch"] }
+          }
+        }
+      },
+      "battery_status": {
+        "name": "battery_status",
+        "description": "Get battery status",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      "screen_info": {
+        "name": "screen_info",
+        "description": "Get screen information",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      "clipboard": {
+        "name": "clipboard",
+        "description": "Read/write clipboard",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["read", "write", "readText", "writeText"] },
+            "text": { "type": "string" },
+            "data": { "type": "array" }
+          }
+        }
+      },
+      "vibration": {
+        "name": "vibration",
+        "description": "Control device vibration",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "pattern": { "type": "array" }
+          }
+        }
+      }
+    },
+    "media": {
+      "file_reader": {
+        "name": "file_reader",
+        "description": "Read files from file input",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "file": { "type": "string" },
+            "type": { "type": "string", "enum": ["text", "dataURL", "arrayBuffer", "binaryString"] }
+          }
+        }
+      },
+      "image_processor": {
+        "name": "image_processor",
+        "description": "Process images using Canvas API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "imageData": { "type": "string" },
+            "operation": { "type": "string", "enum": ["resize", "crop", "filter", "convert", "draw", "getImageData"] },
+            "params": { "type": "object" }
+          }
+        }
+      },
+      "audio_recorder": {
+        "name": "audio_recorder",
+        "description": "Record audio using MediaRecorder",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["start", "stop", "pause", "resume", "getTracks"] },
+            "duration": { "type": "number" },
+            "mimeType": { "type": "string" }
+          }
+        }
+      },
+      "video_capture": {
+        "name": "video_capture",
+        "description": "Capture video from camera",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["start", "stop", "capture", "getTracks"] },
+            "quality": { "type": "string", "enum": ["low", "medium", "high"] },
+            "constraints": { "type": "object" }
+          }
+        }
+      },
+      "qr_scanner": {
+        "name": "qr_scanner",
+        "description": "Scan QR codes from camera",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["start", "stop", "scan"] }
+          }
+        }
+      },
+      "barcode_scanner": {
+        "name": "barcode_scanner",
+        "description": "Scan barcodes from camera",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["start", "stop", "scan"] },
+            "formats": { "type": "array" }
+          }
+        }
+      },
+      "face_detection": {
+        "name": "face_detection",
+        "description": "Detect faces in images/video",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "imageData": { "type": "string" },
+            "options": { "type": "object" }
+          }
+        }
+      }
+    },
+    "browser": {
+      "dom_query": {
+        "name": "dom_query",
+        "description": "Query DOM elements",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "selector": { "type": "string" },
+            "action": { "type": "string", "enum": ["find", "getText", "getAttribute", "click", "setAttribute", "removeAttribute", "addClass", "removeClass"] },
+            "value": { "type": "string" }
+          }
+        }
+      },
+      "page_info": {
+        "name": "page_info",
+        "description": "Get current page information",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      "history": {
+        "name": "history",
+        "description": "Access browser history",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["back", "forward", "go", "pushState", "replaceState"] },
+            "steps": { "type": "number" },
+            "state": { "type": "object" },
+            "url": { "type": "string" }
+          }
+        }
+      },
+      "download": {
+        "name": "download",
+        "description": "Download files",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": { "type": "string" },
+            "filename": { "type": "string" },
+            "data": { "type": "string" },
+            "type": { "type": "string" }
+          }
+        }
+      },
+      "print": {
+        "name": "print",
+        "description": "Print current page or content",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "content": { "type": "string" },
+            "options": { "type": "object" }
+          }
+        }
+      },
+      "fullscreen": {
+        "name": "fullscreen",
+        "description": "Control fullscreen mode",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["enter", "exit", "toggle", "isFullscreen"] },
+            "element": { "type": "string" }
+          }
+        }
+      },
+      "scroll": {
+        "name": "scroll",
+        "description": "Control page scrolling",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["to", "by", "intoView", "getPosition"] },
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "element": { "type": "string" }
+          }
+        }
+      }
+    },
+    "crypto": {
+      "hash": {
+        "name": "hash",
+        "description": "Generate hashes using Web Crypto API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "algorithm": { "type": "string", "enum": ["SHA-1", "SHA-256", "SHA-384", "SHA-512", "MD5"] }
+          }
+        }
+      },
+      "encrypt": {
+        "name": "encrypt",
+        "description": "Encrypt text using Web Crypto API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "password": { "type": "string" },
+            "algorithm": { "type": "string", "default": "AES-GCM" }
+          }
+        }
+      },
+      "decrypt": {
+        "name": "decrypt",
+        "description": "Decrypt text using Web Crypto API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "encryptedText": { "type": "string" },
+            "password": { "type": "string" },
+            "algorithm": { "type": "string", "default": "AES-GCM" }
+          }
+        }
+      },
+      "generate_key": {
+        "name": "generate_key",
+        "description": "Generate cryptographic keys",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string", "enum": ["RSA", "ECDSA", "AES", "HMAC"] },
+            "length": { "type": "number" },
+            "usage": { "type": "array" }
+          }
+        }
+      },
+      "sign": {
+        "name": "sign",
+        "description": "Sign data using Web Crypto API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "data": { "type": "string" },
+            "privateKey": { "type": "string" },
+            "algorithm": { "type": "string" }
+          }
+        }
+      },
+      "verify": {
+        "name": "verify",
+        "description": "Verify digital signatures",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "data": { "type": "string" },
+            "signature": { "type": "string" },
+            "publicKey": { "type": "string" },
+            "algorithm": { "type": "string" }
+          }
+        }
+      },
+      "random_bytes": {
+        "name": "random_bytes",
+        "description": "Generate cryptographically secure random bytes",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "length": { "type": "number" }
+          }
+        }
+      }
+    },
+    "utility": {
+      "base64_encode": {
+        "name": "base64_encode",
+        "description": "Encode text to base64",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" }
+          }
+        }
+      },
+      "base64_decode": {
+        "name": "base64_decode",
+        "description": "Decode base64 text",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "encodedText": { "type": "string" }
+          }
+        }
+      },
+      "url_encode": {
+        "name": "url_encode",
+        "description": "URL encode text",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" }
+          }
+        }
+      },
+      "url_decode": {
+        "name": "url_decode",
+        "description": "URL decode text",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "encodedText": { "type": "string" }
+          }
+        }
+      },
+      "json_parse": {
+        "name": "json_parse",
+        "description": "Parse JSON text",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "jsonText": { "type": "string" }
+          }
+        }
+      },
+      "json_stringify": {
+        "name": "json_stringify",
+        "description": "Stringify object to JSON",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "object": { "type": "object" },
+            "replacer": { "type": "function" },
+            "space": { "type": "number" }
+          }
+        }
+      },
+      "regex_match": {
+        "name": "regex_match",
+        "description": "Match text with regex",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "pattern": { "type": "string" },
+            "flags": { "type": "string" }
+          }
+        }
+      },
+      "date_format": {
+        "name": "date_format",
+        "description": "Format dates",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "date": { "type": "string" },
+            "format": { "type": "string" },
+            "locale": { "type": "string" }
+          }
+        }
+      },
+      "text_encoding": {
+        "name": "text_encoding",
+        "description": "Encode/decode text with different encodings",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "encoding": { "type": "string", "enum": ["utf-8", "utf-16", "ascii", "latin1"] },
+            "action": { "type": "string", "enum": ["encode", "decode"] }
+          }
+        }
+      },
+      "compression": {
+        "name": "compression",
+        "description": "Compress/decompress data",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "data": { "type": "string" },
+            "algorithm": { "type": "string", "enum": ["gzip", "deflate", "brotli"] },
+            "action": { "type": "string", "enum": ["compress", "decompress"] }
+          }
+        }
+      }
+    },
+    "communication": {
+      "notification": {
+        "name": "notification",
+        "description": "Show browser notifications",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "body": { "type": "string" },
+            "icon": { "type": "string" },
+            "tag": { "type": "string" },
+            "actions": { "type": "array" }
+          }
+        }
+      },
+      "share": {
+        "name": "share",
+        "description": "Use Web Share API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "text": { "type": "string" },
+            "url": { "type": "string" },
+            "files": { "type": "array" }
+          }
+        }
+      },
+      "speech_synthesis": {
+        "name": "speech_synthesis",
+        "description": "Text to speech",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "text": { "type": "string" },
+            "voice": { "type": "string" },
+            "rate": { "type": "number" },
+            "pitch": { "type": "number" },
+            "volume": { "type": "number" }
+          }
+        }
+      },
+      "speech_recognition": {
+        "name": "speech_recognition",
+        "description": "Speech to text",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "language": { "type": "string" },
+            "continuous": { "type": "boolean" },
+            "interimResults": { "type": "boolean" }
+          }
+        }
+      },
+      "post_message": {
+        "name": "post_message",
+        "description": "Send messages between windows/workers",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "target": { "type": "string" },
+            "message": { "type": "object" },
+            "origin": { "type": "string" }
+          }
+        }
+      }
+    },
+    "performance": {
+      "performance_metrics": {
+        "name": "performance_metrics",
+        "description": "Get performance metrics",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      "memory_usage": {
+        "name": "memory_usage",
+        "description": "Get memory usage information",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      "network_info": {
+        "name": "network_info",
+        "description": "Get network information",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      "timing": {
+        "name": "timing",
+        "description": "Measure execution time",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "operation": { "type": "string" },
+            "mark": { "type": "string" },
+            "measure": { "type": "string" }
+          }
+        }
+      },
+      "resource_timing": {
+        "name": "resource_timing",
+        "description": "Get resource loading timing",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": { "type": "string" }
+          }
+        }
+      }
+    },
+    "workers": {
+      "create_worker": {
+        "name": "create_worker",
+        "description": "Create a new Web Worker",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "script": { "type": "string" },
+            "message": { "type": "object" },
+            "options": { "type": "object" }
+          }
+        }
+      },
+      "shared_array_buffer": {
+        "name": "shared_array_buffer",
+        "description": "Work with SharedArrayBuffer for multi-threading",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "size": { "type": "number" },
+            "operation": { "type": "string" },
+            "data": { "type": "array" }
+          }
+        }
+      },
+      "service_worker": {
+        "name": "service_worker",
+        "description": "Service Worker operations",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["register", "unregister", "update", "getRegistration"] },
+            "script": { "type": "string" },
+            "scope": { "type": "string" }
+          }
+        }
+      }
+    },
+    "wasm": {
+      "wasm_compile": {
+        "name": "wasm_compile",
+        "description": "Compile and run WebAssembly modules",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "wasmBytes": { "type": "string" },
+            "imports": { "type": "object" },
+            "options": { "type": "object" }
+          }
+        }
+      },
+      "wasm_instantiate": {
+        "name": "wasm_instantiate",
+        "description": "Instantiate WebAssembly module",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "module": { "type": "string" },
+            "memory": { "type": "object" },
+            "imports": { "type": "object" }
+          }
+        }
+      },
+      "wasi_filesystem": {
+        "name": "wasi_filesystem",
+        "description": "WASI filesystem operations",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "operation": { "type": "string" },
+            "path": { "type": "string" },
+            "data": { "type": "string" }
+          }
+        }
+      },
+      "wasi_networking": {
+        "name": "wasi_networking",
+        "description": "WASI networking operations",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "operation": { "type": "string" },
+            "host": { "type": "string" },
+            "port": { "type": "number" }
+          }
+        }
+      },
+      "wasi_random": {
+        "name": "wasi_random",
+        "description": "WASI random number generation",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "bytes": { "type": "number" }
+          }
+        }
+      }
+    },
+    "graphics": {
+      "webgl_context": {
+        "name": "webgl_context",
+        "description": "Create WebGL context and draw",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "canvas": { "type": "string" },
+            "operation": { "type": "string" },
+            "shaders": { "type": "object" },
+            "vertices": { "type": "array" }
+          }
+        }
+      },
+      "canvas_2d": {
+        "name": "canvas_2d",
+        "description": "2D canvas drawing operations",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "operation": { "type": "string" },
+            "params": { "type": "object" },
+            "imageData": { "type": "string" }
+          }
+        }
+      },
+      "webgpu": {
+        "name": "webgpu",
+        "description": "WebGPU graphics operations",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "operation": { "type": "string" },
+            "shader": { "type": "string" },
+            "data": { "type": "object" }
+          }
+        }
+      },
+      "offscreen_canvas": {
+        "name": "offscreen_canvas",
+        "description": "OffscreenCanvas for background rendering",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "width": { "type": "number" },
+            "height": { "type": "number" },
+            "operation": { "type": "string" }
+          }
+        }
+      }
+    },
+    "webrtc": {
+      "peer_connection": {
+        "name": "peer_connection",
+        "description": "Create WebRTC peer connection",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "offer": { "type": "string" },
+            "answer": { "type": "string" },
+            "iceCandidates": { "type": "array" }
+          }
+        }
+      },
+      "data_channel": {
+        "name": "data_channel",
+        "description": "WebRTC data channel communication",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "message": { "type": "string" },
+            "label": { "type": "string" }
+          }
+        }
+      },
+      "screen_share": {
+        "name": "screen_share",
+        "description": "Share screen via WebRTC",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "audio": { "type": "boolean" },
+            "video": { "type": "boolean" }
+          }
+        }
+      },
+      "get_user_media": {
+        "name": "get_user_media",
+        "description": "Access user media (camera/microphone)",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "audio": { "type": "boolean" },
+            "video": { "type": "boolean" },
+            "constraints": { "type": "object" }
+          }
+        }
+      }
+    },
+    "payment": {
+      "payment_request": {
+        "name": "payment_request",
+        "description": "Web Payment Request API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "amount": { "type": "number" },
+            "currency": { "type": "string" },
+            "method": { "type": "string" },
+            "details": { "type": "object" }
+          }
+        }
+      },
+      "apple_pay": {
+        "name": "apple_pay",
+        "description": "Apple Pay integration",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "amount": { "type": "number" },
+            "merchantId": { "type": "string" },
+            "countryCode": { "type": "string" }
+          }
+        }
+      },
+      "google_pay": {
+        "name": "google_pay",
+        "description": "Google Pay integration",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "amount": { "type": "number" },
+            "merchantId": { "type": "string" },
+            "environment": { "type": "string" }
+          }
+        }
+      }
+    },
+    "filesystem": {
+      "file_system_access": {
+        "name": "file_system_access",
+        "description": "File System Access API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "fileHandle": { "type": "string" },
+            "content": { "type": "string" }
+          }
+        }
+      },
+      "show_open_file_picker": {
+        "name": "show_open_file_picker",
+        "description": "Open file picker dialog",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "types": { "type": "array" },
+            "multiple": { "type": "boolean" },
+            "excludeAcceptAllOption": { "type": "boolean" }
+          }
+        }
+      },
+      "show_save_file_picker": {
+        "name": "show_save_file_picker",
+        "description": "Save file picker dialog",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "suggestedName": { "type": "string" },
+            "types": { "type": "array" },
+            "excludeAcceptAllOption": { "type": "boolean" }
+          }
+        }
+      },
+      "show_directory_picker": {
+        "name": "show_directory_picker",
+        "description": "Directory picker dialog",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "mode": { "type": "string", "enum": ["read", "readwrite"] }
+          }
+        }
+      }
+    },
+    "bluetooth": {
+      "bluetooth_scan": {
+        "name": "bluetooth_scan",
+        "description": "Scan for Bluetooth devices",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "filters": { "type": "array" },
+            "optionalServices": { "type": "array" },
+            "acceptAllDevices": { "type": "boolean" }
+          }
+        }
+      },
+      "bluetooth_connect": {
+        "name": "bluetooth_connect",
+        "description": "Connect to Bluetooth device",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "deviceId": { "type": "string" },
+            "services": { "type": "array" },
+            "characteristics": { "type": "array" }
+          }
+        }
+      },
+      "usb_devices": {
+        "name": "usb_devices",
+        "description": "Access USB devices",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "deviceId": { "type": "string" },
+            "filters": { "type": "array" }
+          }
+        }
+      },
+      "serial_port": {
+        "name": "serial_port",
+        "description": "Serial Port API access",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "port": { "type": "string" },
+            "data": { "type": "string" },
+            "baudRate": { "type": "number" }
+          }
+        }
+      },
+      "hid_device": {
+        "name": "hid_device",
+        "description": "Human Interface Device API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "deviceId": { "type": "string" },
+            "filters": { "type": "array" }
+          }
+        }
+      }
+    },
+    "advanced": {
+      "web_locks": {
+        "name": "web_locks",
+        "description": "Web Locks API for synchronization",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "mode": { "type": "string", "enum": ["exclusive", "shared"] },
+            "action": { "type": "string", "enum": ["request", "query"] }
+          }
+        }
+      },
+      "web_streams": {
+        "name": "web_streams",
+        "description": "Web Streams API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "source": { "type": "string" },
+            "operation": { "type": "string" },
+            "strategy": { "type": "object" }
+          }
+        }
+      },
+      "web_components": {
+        "name": "web_components",
+        "description": "Create and manipulate Web Components",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "tagName": { "type": "string" },
+            "template": { "type": "string" },
+            "shadowRoot": { "type": "boolean" }
+          }
+        }
+      },
+      "intersection_observer": {
+        "name": "intersection_observer",
+        "description": "Intersection Observer API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "target": { "type": "string" },
+            "callback": { "type": "string" },
+            "options": { "type": "object" }
+          }
+        }
+      },
+      "mutation_observer": {
+        "name": "mutation_observer",
+        "description": "Mutation Observer API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "target": { "type": "string" },
+            "options": { "type": "object" },
+            "callback": { "type": "string" }
+          }
+        }
+      },
+      "resize_observer": {
+        "name": "resize_observer",
+        "description": "Resize Observer API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "target": { "type": "string" },
+            "callback": { "type": "string" }
+          }
+        }
+      },
+      "page_visibility": {
+        "name": "page_visibility",
+        "description": "Page Visibility API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["get", "watch"] }
+          }
+        }
+      }
+    },
+    "input": {
+      "gamepad_api": {
+        "name": "gamepad_api",
+        "description": "Gamepad API for controller input",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "gamepadIndex": { "type": "number" },
+            "buttonIndex": { "type": "number" }
+          }
+        }
+      },
+      "touch_events": {
+        "name": "touch_events",
+        "description": "Touch event handling",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "target": { "type": "string" },
+            "preventDefault": { "type": "boolean" }
+          }
+        }
+      },
+      "pointer_events": {
+        "name": "pointer_events",
+        "description": "Pointer events (mouse, touch, pen)",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "target": { "type": "string" },
+            "capture": { "type": "boolean" }
+          }
+        }
+      },
+      "keyboard_events": {
+        "name": "keyboard_events",
+        "description": "Keyboard event handling",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "key": { "type": "string" },
+            "target": { "type": "string" }
+          }
+        }
+      }
+    },
+    "pwa": {
+      "background_sync": {
+        "name": "background_sync",
+        "description": "Background Sync API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "tag": { "type": "string" },
+            "data": { "type": "object" }
+          }
+        }
+      },
+      "push_notifications": {
+        "name": "push_notifications",
+        "description": "Push Notifications API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "message": { "type": "string" },
+            "subscription": { "type": "object" }
+          }
+        }
+      },
+      "periodic_sync": {
+        "name": "periodic_sync",
+        "description": "Periodic Background Sync API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "tag": { "type": "string" },
+            "minInterval": { "type": "number" }
+          }
+        }
+      },
+      "web_app_manifest": {
+        "name": "web_app_manifest",
+        "description": "Web App Manifest operations",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "manifest": { "type": "object" }
+          }
+        }
+      }
+    },
+    "experimental": {
+      "web_transport": {
+        "name": "web_transport",
+        "description": "WebTransport API for low-latency communication",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": { "type": "string" },
+            "message": { "type": "string" },
+            "options": { "type": "object" }
+          }
+        }
+      },
+      "web_codecs": {
+        "name": "web_codecs",
+        "description": "Web Codecs API for media processing",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "codec": { "type": "string" },
+            "data": { "type": "string" },
+            "options": { "type": "object" }
+          }
+        }
+      },
+      "web_nfc": {
+        "name": "web_nfc",
+        "description": "Web NFC API for near field communication",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "message": { "type": "string" },
+            "options": { "type": "object" }
+          }
+        }
+      },
+      "web_otp": {
+        "name": "web_otp",
+        "description": "Web OTP API for one-time passwords",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "phoneNumber": { "type": "string" }
+          }
+        }
+      },
+      "web_authentication": {
+        "name": "web_authentication",
+        "description": "Web Authentication API (WebAuthn)",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string", "enum": ["create", "get"] },
+            "challenge": { "type": "string" },
+            "user": { "type": "object" }
+          }
+        }
+      },
+      "web_share_target": {
+        "name": "web_share_target",
+        "description": "Web Share Target API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "data": { "type": "object" }
+          }
+        }
+      },
+      "web_serial": {
+        "name": "web_serial",
+        "description": "Web Serial API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "port": { "type": "string" },
+            "data": { "type": "string" }
+          }
+        }
+      },
+      "web_midi": {
+        "name": "web_midi",
+        "description": "Web MIDI API",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "action": { "type": "string" },
+            "device": { "type": "string" },
+            "message": { "type": "array" }
+          }
+        }
+      }
+    }
+  },
+  "metadata": {
+    "totalTools": 150,
+    "categories": 20,
+    "lastUpdated": "2024-01-01",
+    "description": "Comprehensive list of browser-native tools that can be implemented without external servers or processes"
+  }
+}

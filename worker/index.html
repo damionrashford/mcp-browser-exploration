@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MCP Client (Stdio in Browser)</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #output { margin-top: 20px; white-space: pre-wrap; border: 1px solid #ccc; padding: 10px; }
+    textarea, button { margin: 10px 0; display: block; }
+    textarea { width: 100%; max-width: 500px; }
+  </style>
+</head>
+<body>
+  <h1>MCP Client (Stdio Emulation)</h1>
+  <input id="serverPath" type="text" placeholder="Path to WASM server (e.g., mcp-server.wasm)" value="mcp-server.wasm">
+  <textarea id="query" rows="4" cols="50" placeholder="Enter query (e.g., List tools)"></textarea>
+  <button onclick="initialize()">Initialize MCP Session</button>
+  <button onclick="sendQuery()">Send Query</button>
+  <button onclick="shutdown()">Shutdown</button>
+  <div id="output"></div>
+
+  <script>
+    let worker;
+    let sessionId = null;
+    let requestId = 1;
+    const pendingRequests = new Map(); // Track requests for timeouts
+    const outputDiv = document.getElementById('output');
+    const DEFAULT_TIMEOUT = 10000; // 10s timeout
+    const MAX_TIMEOUT = 30000; // 30s max timeout
+
+    // Initialize Web Worker and MCP session
+    async function initialize() {
+      const serverPath = document.getElementById('serverPath').value;
+      if (!serverPath) {
+        log('Error: Server path required');
+        return;
+      }
+      worker = new Worker('mcp-worker.js');
+      worker.onmessage = handleWorkerMessage;
+      worker.onerror = (error) => log(`Worker error: ${error.message}`);
+
+      // Send initialize request (MCP lifecycle: Initialization)
+      const initRequest = {
+        jsonrpc: '2.0',
+        id: requestId++,
+        method: 'initialize',
+        params: {
+          protocolVersion: '2025-06-18', // Latest supported version
+          capabilities: {
+            roots: { listChanged: true },
+            sampling: {},
+            elicitation: {}
+          },
+          clientInfo: {
+            name: 'BrowserMCPClient',
+            title: 'Browser MCP Client',
+            version: '1.0.0'
+          }
+        }
+      };
+      await sendJsonRpc(initRequest, serverPath);
+      setupTimeout(initRequest.id, DEFAULT_TIMEOUT);
+      log('Sent initialize request...');
+    }
+
+    // Handle messages from worker (stdout emulation)
+    function handleWorkerMessage(event) {
+      const { type, data, serverPath } = event.data;
+      if (type === 'stdout') {
+        // Parse newline-delimited JSON-RPC messages
+        const lines = data.split('\n').filter(line => line.trim());
+        lines.forEach(line => {
+          try {
+            const jsonRpc = JSON.parse(line);
+            log(`Received JSON-RPC: ${JSON.stringify(jsonRpc, null, 2)}`);
+
+            // Handle initialization response
+            if (jsonRpc.id && pendingRequests.has(jsonRpc.id)) {
+              clearTimeout(pendingRequests.get(jsonRpc.id).timeout);
+              pendingRequests.delete(jsonRpc.id);
+
+              if (jsonRpc.error) {
+                log(`Error: ${jsonRpc.error.message}`);
+                if (jsonRpc.error.code === -32602) {
+                  log('Protocol version mismatch. Disconnecting...');
+                  shutdown();
+                }
+                return;
+              }
+
+              if (jsonRpc.result && jsonRpc.result.protocolVersion) {
+                if (jsonRpc.result.protocolVersion !== '2025-06-18') {
+                  log(`Unsupported protocol version: ${jsonRpc.result.protocolVersion}. Disconnecting...`);
+                  shutdown();
+                  return;
+                }
+                sessionId = jsonRpc.result.sessionId || 'default';
+                log(`Session initialized. Server capabilities: ${JSON.stringify(jsonRpc.result.capabilities, null, 2)}`);
+
+                // Send initialized notification (MCP lifecycle)
+                sendJsonRpc({
+                  jsonrpc: '2.0',
+                  method: 'notifications/initialized'
+                }, serverPath);
+              }
+            }
+
+            // Handle server-initiated requests or notifications
+            if (jsonRpc.method && !jsonRpc.id) {
+              log(`Server notification: ${jsonRpc.method}`);
+              // Example: Handle logging or progress notifications
+              if (jsonRpc.method === 'notifications/progress' && jsonRpc.params.id) {
+                if (pendingRequests.has(jsonRpc.params.id)) {
+                  // Reset timeout on progress
+                  clearTimeout(pendingRequests.get(jsonRpc.params.id).timeout);
+                  setupTimeout(jsonRpc.params.id, DEFAULT_TIMEOUT);
+                }
+              }
+            } else if (jsonRpc.method) {
+              log(`Server request: ${jsonRpc.method}`);
+              // Respond to server requests (e.g., ping)
+              if (jsonRpc.method === 'ping') {
+                sendJsonRpc({
+                  jsonrpc: '2.0',
+                  id: jsonRpc.id,
+                  result: {}
+                }, serverPath);
+              }
+            }
+          } catch (e) {
+            log(`Error parsing JSON-RPC: ${e.message}`);
+          }
+        });
+      } else if (type === 'stderr') {
+        log(`Server log: ${data}`);
+      } else if (type === 'init') {
+        log(`Worker initialized with server: ${serverPath}`);
+      }
+    }
+
+    // Send JSON-RPC message to worker (stdin emulation)
+    async function sendJsonRpc(message, serverPath) {
+      if (!worker) throw new Error('Worker not initialized');
+      const data = JSON.stringify(message) + '\n'; // Newline-delimited
+      worker.postMessage({ type: 'stdin', data, serverPath });
+    }
+
+    // Setup timeout for requests
+    function setupTimeout(requestId, timeoutMs) {
+      const timeout = setTimeout(() => {
+        log(`Request ${requestId} timed out`);
+        sendJsonRpc({
+          jsonrpc: '2.0',
+          method: 'notifications/cancelled',
+          params: { id: requestId }
+        }, document.getElementById('serverPath').value);
+        pendingRequests.delete(requestId);
+      }, Math.min(timeoutMs, MAX_TIMEOUT));
+      pendingRequests.set(requestId, { timeout });
+    }
+
+    // Send user query (Operation phase)
+    async function sendQuery() {
+      const query = document.getElementById('query').value;
+      const serverPath = document.getElementById('serverPath').value;
+      if (!sessionId) {
+        log('Error: Session not initialized');
+        return;
+      }
+      // Example: List tools (replace with LLM-driven tool calls for real queries)
+      const listToolsRequest = {
+        jsonrpc: '2.0',
+        id: requestId++,
+        method: 'list_tools',
+        params: {}
+      };
+      await sendJsonRpc(listToolsRequest, serverPath);
+      setupTimeout(listToolsRequest.id, DEFAULT_TIMEOUT);
+      log(`Sent query: ${query}`);
+    }
+
+    // Shutdown (MCP lifecycle: Shutdown)
+    async function shutdown() {
+      if (worker) {
+        worker.terminate();
+        worker = null;
+        sessionId = null;
+        pendingRequests.clear();
+        log('Session shutdown');
+      }
+    }
+
+    // Log messages to UI
+    function log(message) {
+      outputDiv.textContent += message + '\n';
+      outputDiv.scrollTop = outputDiv.scrollHeight;
+    }
+  </script>
+</body>
+</html>

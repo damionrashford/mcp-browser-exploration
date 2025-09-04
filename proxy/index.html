@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MCP Client (Stdio via WebSocket)</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #output { margin-top: 20px; white-space: pre-wrap; border: 1px solid #ccc; padding: 10px; }
+    textarea, button, input { margin: 10px 0; display: block; }
+    textarea { width: 100%; max-width: 500px; }
+  </style>
+</head>
+<body>
+  <h1>MCP Client (Stdio Emulation via WebSocket)</h1>
+  <input id="proxyUrl" type="text" placeholder="WebSocket proxy URL (e.g., ws://localhost:8080)" value="ws://localhost:8080">
+  <textarea id="query" rows="4" cols="50" placeholder="Enter query (e.g., List tools)"></textarea>
+  <button onclick="initialize()">Initialize MCP Session</button>
+  <button onclick="sendQuery()">Send Query</button>
+  <button onclick="shutdown()">Shutdown</button>
+  <div id="output"></div>
+
+  <script>
+    let ws;
+    let sessionId = null;
+    let requestId = 1;
+    const pendingRequests = new Map();
+    const outputDiv = document.getElementById('output');
+    const DEFAULT_TIMEOUT = 10000; // 10s
+    const MAX_TIMEOUT = 30000; // 30s
+
+    // Initialize WebSocket and MCP session
+    async function initialize() {
+      const proxyUrl = document.getElementById('proxyUrl').value;
+      if (!proxyUrl) {
+        log('Error: Proxy URL required');
+        return;
+      }
+      ws = new WebSocket(proxyUrl);
+      ws.onopen = () => {
+        log('Connected to WebSocket proxy');
+        const initRequest = {
+          jsonrpc: '2.0',
+          id: requestId++,
+          method: 'initialize',
+          params: {
+            protocolVersion: '2025-06-18',
+            capabilities: {
+              roots: { listChanged: true },
+              sampling: {},
+              elicitation: {}
+            },
+            clientInfo: {
+              name: 'BrowserMCPClient',
+              title: 'Browser MCP Client',
+              version: '1.0.0'
+            }
+          }
+        };
+        sendJsonRpc(initRequest);
+        setupTimeout(initRequest.id, DEFAULT_TIMEOUT);
+        log('Sent initialize request...');
+      };
+      ws.onmessage = (event) => {
+        const lines = event.data.split('\n').filter(line => line.trim());
+        lines.forEach(line => {
+          try {
+            const jsonRpc = JSON.parse(line);
+            log(`Received JSON-RPC: ${JSON.stringify(jsonRpc, null, 2)}`);
+            if (jsonRpc.id && pendingRequests.has(jsonRpc.id)) {
+              clearTimeout(pendingRequests.get(jsonRpc.id).timeout);
+              pendingRequests.delete(jsonRpc.id);
+              if (jsonRpc.error) {
+                log(`Error: ${jsonRpc.error.message}`);
+                if (jsonRpc.error.code === -32602) {
+                  log('Protocol version mismatch. Disconnecting...');
+                  shutdown();
+                }
+                return;
+              }
+              if (jsonRpc.result && jsonRpc.result.protocolVersion) {
+                if (jsonRpc.result.protocolVersion !== '2025-06-18') {
+                  log(`Unsupported protocol version: ${jsonRpc.result.protocolVersion}. Disconnecting...`);
+                  shutdown();
+                  return;
+                }
+                sessionId = jsonRpc.result.sessionId || 'default';
+                log(`Session initialized. Server capabilities: ${JSON.stringify(jsonRpc.result.capabilities, null, 2)}`);
+                sendJsonRpc({ jsonrpc: '2.0', method: 'notifications/initialized' });
+              }
+            }
+            if (jsonRpc.method && !jsonRpc.id) {
+              log(`Server notification: ${jsonRpc.method}`);
+              if (jsonRpc.method === 'notifications/progress' && jsonRpc.params.id) {
+                if (pendingRequests.has(jsonRpc.params.id)) {
+                  clearTimeout(pendingRequests.get(jsonRpc.params.id).timeout);
+                  setupTimeout(jsonRpc.params.id, DEFAULT_TIMEOUT);
+                }
+              }
+            } else if (jsonRpc.method) {
+              log(`Server request: ${jsonRpc.method}`);
+              if (jsonRpc.method === 'ping') {
+                sendJsonRpc({ jsonrpc: '2.0', id: jsonRpc.id, result: {} });
+              }
+            }
+          } catch (e) {
+            log(`Error parsing JSON-RPC: ${e.message}`);
+          }
+        });
+      };
+      ws.onerror = (error) => log(`WebSocket error: ${error}`);
+      ws.onclose = () => log('WebSocket closed');
+    }
+
+    // Send JSON-RPC message
+    async function sendJsonRpc(message) {
+      if (!ws || ws.readyState !== WebSocket.OPEN) throw new Error('WebSocket not connected');
+      ws.send(JSON.stringify(message) + '\n');
+    }
+
+    // Setup timeout for requests
+    function setupTimeout(requestId, timeoutMs) {
+      const timeout = setTimeout(() => {
+        log(`Request ${requestId} timed out`);
+        sendJsonRpc({
+          jsonrpc: '2.0',
+          method: 'notifications/cancelled',
+          params: { id: requestId }
+        });
+        pendingRequests.delete(requestId);
+      }, Math.min(timeoutMs, MAX_TIMEOUT));
+      pendingRequests.set(requestId, { timeout });
+    }
+
+    // Send user query
+    async function sendQuery() {
+      const query = document.getElementById('query').value;
+      if (!sessionId) {
+        log('Error: Session not initialized');
+        return;
+      }
+      const listToolsRequest = {
+        jsonrpc: '2.0',
+        id: requestId++,
+        method: 'list_tools',
+        params: {}
+      };
+      await sendJsonRpc(listToolsRequest);
+      setupTimeout(listToolsRequest.id, DEFAULT_TIMEOUT);
+      log(`Sent query: ${query}`);
+    }
+
+    // Shutdown
+    async function shutdown() {
+      if (ws) {
+        ws.close();
+        ws = null;
+        sessionId = null;
+        pendingRequests.clear();
+        log('Session shutdown');
+      }
+    }
+
+    // Log to UI
+    function log(message) {
+      outputDiv.textContent += message + '\n';
+      outputDiv.scrollTop = outputDiv.scrollHeight;
+    }
+  </script>
+</body>
+</html>
