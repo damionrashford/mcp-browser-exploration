@@ -8,7 +8,39 @@ This project explores the fundamental challenge of running MCP in browsers: **MC
 
 ## Architecture Approaches
 
-### 1. WebSocket Proxy Approach (`/proxy/`)
+### 1. Remote MCP Server Approach (`/remote/`) ⭐ **RECOMMENDED**
+
+**Concept**: Connect to remote MCP servers using the official [Streamable HTTP transport](https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#streamable-http).
+
+```
+Browser MCP Client ←→ HTTP/SSE ←→ Remote MCP Server
+```
+
+**Files**:
+- `remote/index.html` - Browser MCP client with Streamable HTTP transport
+- `remote/README.md` - Documentation for remote MCP approach
+
+**How it works**:
+1. Browser client makes HTTP POST requests to remote MCP server
+2. Server responds with JSON or initiates SSE stream
+3. Session management via `Mcp-Session-Id` header
+4. Protocol versioning via `MCP-Protocol-Version` header
+5. Real-time updates via Server-Sent Events
+
+**Pros**:
+- **Pure browser solution** - no external processes required
+- **Official MCP specification** - uses standard Streamable HTTP transport
+- **Production ready** - designed for web deployment
+- **Real-time communication** - SSE for server-initiated messages
+- **Session persistence** - maintains state across requests
+- **Works with any remote MCP server** - Python, Node.js, etc.
+
+**Cons**:
+- Requires remote MCP server with HTTP transport support
+- Depends on internet connection
+- CORS policies may need configuration
+
+### 2. WebSocket Proxy Approach (`/proxy/`)
 
 **Concept**: A Node.js proxy that bridges WebSocket ↔ stdio communication.
 
@@ -35,7 +67,7 @@ Browser MCP Client ←→ WebSocket ←→ Node.js Proxy ←→ stdio ←→ MCP
 - Requires external Node.js process
 - Not suitable for pure browser deployment
 
-### 2. Web Worker + WASM Approach (`/worker/`)
+### 3. Web Worker + WASM Approach (`/worker/`)
 
 **Concept**: Direct browser execution using WebAssembly with WASI stdio emulation.
 
@@ -243,16 +275,18 @@ const result = await client.callTool('fetch_url', { url: 'https://example.com' }
 
 This exploration reveals that:
 
-1. **Real MCP servers cannot run in browsers** due to security constraints
-2. **WebSocket proxy is the standard solution** for browser ↔ MCP communication
-3. **Browser-native tools** provide an alternative for pure browser deployment
-4. **MCP protocol is simple** (just JSON-RPC 2.0) and can be implemented in browsers
-5. **Browser APIs are incredibly powerful** and can replace many MCP server capabilities
+1. **Remote MCP servers CAN run in browsers** using the official Streamable HTTP transport
+2. **Streamable HTTP is the recommended solution** for browser ↔ MCP communication
+3. **WebSocket proxy is an alternative** for local MCP servers
+4. **Browser-native tools** provide another alternative for pure browser deployment
+5. **MCP protocol is simple** (just JSON-RPC 2.0) and can be implemented in browsers
+6. **Browser APIs are incredibly powerful** and can replace many MCP server capabilities
 
-The browser-native approach offers a compelling alternative for applications that need MCP-like functionality without external dependencies.
+The **remote MCP approach using Streamable HTTP** is the most practical solution for production browser applications, as it uses the official MCP specification and works with any remote MCP server.
 
 ## Files
 
+- `remote/` - **Remote MCP server approach (RECOMMENDED)**
 - `proxy/` - WebSocket proxy approach
 - `worker/` - Web Worker + WASM approach  
 - `browser-tools.json` - Comprehensive list of browser-native tools
